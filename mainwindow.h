@@ -16,6 +16,8 @@
 #include <QLabel>
 #include <QGraphicsPixmapItem>
 
+#include <vector>
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
@@ -37,6 +39,9 @@ private slots:
     void prevImage();
     void nextImage();
     void saveAs();
+    void filterImage();
+    void applyFilters();
+    void undoFilter();
 
 private:
     QMenu *fileMenu;
@@ -58,9 +63,15 @@ private:
     QAction *zoomOutAction;
     QAction *prevAction;
     QAction *nextAction;
+    QAction *filterAction;
+    QAction *undoAction;
 
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;
+    QImage currentRawImage;
+    QImage lastImage;
+    bool lastImageAvailable;
+    std::vector<std::function<QImage(QImage const&)>> history;
 };
 
 

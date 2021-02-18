@@ -3,6 +3,7 @@
 //
 
 #include "mainwindow.h"
+#include "opencvhelper.h"
 
 #include <QApplication>
 #include <QFileDialog>
@@ -69,6 +70,8 @@ void MainWindow::createActions()
     viewMenu->addAction(prevAction);
     nextAction = new QAction("&Next Image", this);
     viewMenu->addAction(nextAction);
+    filterAction = new QAction("Filter", this);
+    undoAction = new QAction("Undo", this);
 
     // add actions to toolbars
     fileToolBar->addAction(openAction);
@@ -76,6 +79,8 @@ void MainWindow::createActions()
     viewToolBar->addAction(zoomOutAction);
     viewToolBar->addAction(prevAction);
     viewToolBar->addAction(nextAction);
+    viewToolBar->addAction(filterAction);
+    viewToolBar->addAction(undoAction);
 
     // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
@@ -85,6 +90,8 @@ void MainWindow::createActions()
     connect(zoomOutAction, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
     connect(prevAction, SIGNAL(triggered(bool)), this, SLOT(prevImage()));
     connect(nextAction, SIGNAL(triggered(bool)), this, SLOT(nextImage()));
+    connect(filterAction, SIGNAL(triggered(bool)), this, SLOT(filterImage()));
+    connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undoFilter()));
 
     setupShortcuts();
 }
@@ -105,9 +112,12 @@ void MainWindow::openImage()
 
 void MainWindow::showImage(QString path)
 {
+    history.clear();
+    lastImageAvailable = false;
     imageScene->clear();
     imageView->resetMatrix();
     QPixmap image(path);
+    currentRawImage = image.toImage();
     currentImage = imageScene->addPixmap(image);
     imageScene->update();
     imageView->setSceneRect(image.rect());
@@ -179,6 +189,44 @@ void MainWindow::saveAs()
     }
 }
 
+
+void MainWindow::filterImage() {
+    if (currentImage == nullptr) {
+        QMessageBox::information(this, "Information", "Nothing to filter.");
+        return;
+    }
+    history.emplace_back(&documentFilter);
+    applyFilters();
+}
+
+void MainWindow::applyFilters() {
+    lastImage = currentImage->pixmap().toImage();
+    lastImageAvailable = true;
+    currentImage->setPixmap(QPixmap::fromImage(history.back()(lastImage)));
+}
+
+void MainWindow::undoFilter(){
+    if(history.empty()){ return; }
+    history.pop_back();
+    if(history.empty()){
+        currentImage->setPixmap(QPixmap::fromImage(currentRawImage));
+        lastImageAvailable = false;
+        return;
+    }
+    if(lastImageAvailable){
+        currentImage->setPixmap(QPixmap::fromImage(lastImage));
+        lastImageAvailable = false;
+        return;
+    }
+    QImage tempImage = currentRawImage;
+    for(auto it = history.begin(); it != history.end()-1; it++){
+        tempImage = (*it)(tempImage);
+    }
+    lastImage = tempImage;
+    lastImageAvailable = true;
+    tempImage = (*(history.end()-1))(tempImage);
+    currentImage->setPixmap(QPixmap::fromImage(tempImage));
+}
 
 void MainWindow::setupShortcuts()
 {
