@@ -68,7 +68,6 @@ private:
 
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;
-    //QImage currentRawImage;
     QImage lastImage;
     bool lastImageAvailable;
     std::vector<std::function<QImage(QImage const&)>> history;
