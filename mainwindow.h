@@ -34,6 +34,7 @@ private:
 
 private slots:
     void openImage();
+    void openPdf();
     void zoomIn();
     void zoomOut();
     void prevImage();
@@ -56,7 +57,8 @@ private:
     QStatusBar *mainStatusBar;
     QLabel *mainStatusLabel;
 
-    QAction *openAction;
+    QAction* openAction;
+    QAction *openPdfAction;
     QAction *saveAsAction;
     QAction *exitAction;
     QAction *zoomInAction;

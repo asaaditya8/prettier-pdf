@@ -56,8 +56,10 @@ void MainWindow::createActions()
 {
 
     // create actions, add them to menus
-    openAction = new QAction("&Open", this);
+    openAction = new QAction("&Open Image", this);
     fileMenu->addAction(openAction);
+    openPdfAction = new QAction("&Open PDF", this);
+    fileMenu->addAction(openPdfAction);
     saveAsAction = new QAction("&Save as", this);
     fileMenu->addAction(saveAsAction);
     exitAction = new QAction("E&xit", this);
@@ -76,6 +78,7 @@ void MainWindow::createActions()
 
     // add actions to toolbars
     fileToolBar->addAction(openAction);
+    fileToolBar->addAction(openPdfAction);
     viewToolBar->addAction(zoomInAction);
     viewToolBar->addAction(zoomOutAction);
     viewToolBar->addAction(prevAction);
@@ -86,6 +89,7 @@ void MainWindow::createActions()
     // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
+    connect(openPdfAction, SIGNAL(triggered(bool)), this, SLOT(openPdf()));
     connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveAs()));
     connect(zoomInAction, SIGNAL(triggered(bool)), this, SLOT(zoomIn()));
     connect(zoomOutAction, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
@@ -102,7 +106,22 @@ void MainWindow::openImage()
     QFileDialog dialog(this);
     dialog.setWindowTitle("Open Image");
     dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg *.pdf)"));
+    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    QStringList filePaths;
+    if (dialog.exec()) {
+        filePaths = dialog.selectedFiles();
+        showImage(filePaths.at(0));
+    }
+
+
+}
+
+void MainWindow::openPdf()
+{
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Open Image");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter(tr("PDFs (*.pdf)"));
     QStringList filePaths;
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
@@ -119,7 +138,6 @@ void MainWindow::openImage()
 
 
 }
-
 
 void MainWindow::showImage(QString path)
 {
