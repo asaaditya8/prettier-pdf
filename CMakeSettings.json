@@ -12,6 +12,19 @@
       "cmakeToolchain": "C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
       "inheritEnvironments": [ "msvc_x86" ],
       "variables": []
+    },
+    {
+      "name": "x86-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": []
     }
   ]
 }

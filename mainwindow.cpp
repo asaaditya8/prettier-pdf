@@ -113,14 +113,21 @@ void MainWindow::openImage()
 void MainWindow::showImage(QString path)
 {
     history.clear();
+
     lastImageAvailable = false;
     imageScene->clear();
     imageView->resetMatrix();
     QPixmap image(path);
-    currentRawImage = image.toImage();
+    //currentRawImage = image.toImage();
     currentImage = imageScene->addPixmap(image);
     imageScene->update();
     imageView->setSceneRect(image.rect());
+    //QImage* abc = new QImage( currentRawImage );
+    //if (abc != nullptr) { QMessageBox::information(this, "Information", "check memory."); }
+    //delete abc;
+    //abc = nullptr;
+    //if (abc == nullptr) { QMessageBox::information(this, "Information", "delete works."); }
+    //else { QMessageBox::information(this, "Information", "delete didn't work."); }
     QString status = QString("%1, %2x%3, %4 Bytes").arg(path).arg(image.width())
             .arg(image.height()).arg(QFile(path).size());
     mainStatusLabel->setText(status);
@@ -209,7 +216,7 @@ void MainWindow::undoFilter(){
     if(history.empty()){ return; }
     history.pop_back();
     if(history.empty()){
-        currentImage->setPixmap(QPixmap::fromImage(currentRawImage));
+        currentImage->setPixmap(QPixmap(currentImagePath));
         lastImageAvailable = false;
         return;
     }
@@ -218,7 +225,8 @@ void MainWindow::undoFilter(){
         lastImageAvailable = false;
         return;
     }
-    QImage tempImage = currentRawImage;
+    
+    QImage tempImage = QPixmap(currentImagePath).toImage();
     for(auto it = history.begin(); it != history.end()-1; it++){
         tempImage = (*it)(tempImage);
     }
