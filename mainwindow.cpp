@@ -107,7 +107,6 @@ void MainWindow::openImage()
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
         QProcess process;
-        std::cout << filePaths.at(0).toStdString() << std::endl;
         process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
         process.start("cmd", QStringList() << "/c" << "pdftopng.exe" << filePaths.at(0) << "res/pg");
         if (!process.waitForFinished()) {
