@@ -14,7 +14,7 @@ set(REQUIRED_LIBS_QUALIFIED Qt5::Core Qt5::Gui Qt5::Widgets)
 
 
 if(WIN32)
-    add_executable(${PROJECT_NAME} WIN32 main.cpp mainwindow.cpp mainwindow.h opencvhelper.cpp opencvhelper.h)
+    add_executable(${PROJECT_NAME} main.cpp mainwindow.cpp mainwindow.h opencvhelper.cpp opencvhelper.h)
 else()
     add_executable(${PROJECT_NAME} main.cpp mainwindow.cpp mainwindow.h opencvhelper.cpp opencvhelper.h)
     set(OpenCV_DIR /usr/local/include/opencv4)
