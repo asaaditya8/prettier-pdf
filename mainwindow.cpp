@@ -11,6 +11,9 @@
 #include <QPixmap>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QProcess>
+
+#include <shlwapi.h>
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent)
@@ -49,6 +52,19 @@ void MainWindow::initUI()
     mainStatusLabel->setText("Image Information will be here!");
 
     createActions();
+
+    /*ShellExecute(NULL, "open",
+        "cmd",
+        "/c pdftopng.exe AdmitCardNEET19_SAKSHI.pdf pg",
+        "C:\\Users\\Aaditya Singh\\Pictures\\out",
+        SW_HIDE);*/
+    QProcess process;
+    process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
+    process.start("cmd", QStringList() << "/c" << "pdftopng.exe" << "AdmitCardNEET19_SAKSHI.pdf" << "pg");
+    if (!process.waitForFinished()) {
+        // Now your app is running.
+        QMessageBox::information(this, "Information", "Could not convert to PNG.");
+    }
 }
 
 void MainWindow::createActions()
@@ -105,8 +121,24 @@ void MainWindow::openImage()
     QStringList filePaths;
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
+        //SHELLEXECUTEINFO ShExecInfo;
+        //ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+        //ShExecInfo.fMask = NULL;
+        //ShExecInfo.hwnd = NULL;
+        //ShExecInfo.lpVerb = "open";
+        //ShExecInfo.lpFile = "C:\\Users\\Aaditya Singh\\Downloads\\xpdf-tools-win-4.03\\bin32\\pdftopng.exe";
+        //const char* myfile = (filePaths.at(0).toStdString() + " pg").c_str();
+        //ShExecInfo.lpParameters = myfile;
+        //ShExecInfo.lpDirectory = "C:\\Users\\Aaditya Singh\\Pictures\\out";
+        //ShExecInfo.nShow = NULL;
+        //ShExecInfo.hInstApp = NULL;
+        
+
+        //std::cout << ShellExecuteEx(&ShExecInfo) << "\n";
         showImage(filePaths.at(0));
     }
+
+
 }
 
 
