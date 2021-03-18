@@ -49,6 +49,10 @@ void MainWindow::initUI()
     mainStatusBar->addPermanentWidget(mainStatusLabel);
     mainStatusLabel->setText("Image Information will be here!");
 
+    // initialize vars
+    isPDF = false;
+    isEdited = false;
+
     createActions();
 }
 
@@ -110,6 +114,7 @@ void MainWindow::openImage()
     QStringList filePaths;
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
+        isPDF = false;
         showImage(filePaths.at(0));
     }
 
@@ -133,7 +138,8 @@ void MainWindow::openPdf()
             QMessageBox::information(this, "Information", "Could not convert to PNG.");
         }
 
-        //showImage(filePaths.at(0));
+        isPDF = true;
+        showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-000001.png"));
     }
 
 
@@ -141,6 +147,7 @@ void MainWindow::openPdf()
 
 void MainWindow::showImage(QString path)
 {
+    isEdited = false;
     history.clear();
 
     lastImageAvailable = false;
@@ -168,6 +175,9 @@ void MainWindow::zoomOut()
 
 void MainWindow::prevImage()
 {
+    if (isPDF && isEdited) {
+        currentImage->pixmap().save(currentImagePath, nullptr, 0);
+    }
     QFileInfo current(currentImagePath);
     QDir dir = current.absoluteDir();
     QStringList nameFilters;
@@ -183,6 +193,9 @@ void MainWindow::prevImage()
 
 void MainWindow::nextImage()
 {
+    if (isPDF && isEdited) {
+        currentImage->pixmap().save(currentImagePath, nullptr, 0);
+    }
     QFileInfo current(currentImagePath);
     QDir dir = current.absoluteDir();
     QStringList nameFilters;
@@ -231,6 +244,7 @@ void MainWindow::filterImage() {
 void MainWindow::applyFilters() {
     lastImage = currentImage->pixmap().toImage();
     lastImageAvailable = true;
+    isEdited = true;
     currentImage->setPixmap(QPixmap::fromImage(history.back()(lastImage)));
 }
 
@@ -241,6 +255,7 @@ void MainWindow::undoFilter(){
         currentImage->setPixmap(QPixmap(currentImagePath));
         lastImage = QImage();
         lastImageAvailable = false;
+        isEdited = false;
         return;
     }
     if(lastImageAvailable){

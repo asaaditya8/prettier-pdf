@@ -72,6 +72,8 @@ private:
     QGraphicsPixmapItem *currentImage;
     QImage lastImage;
     bool lastImageAvailable;
+    bool isPDF;
+    bool isEdited;
     std::vector<std::function<QImage(QImage const&)>> history;
 };
 

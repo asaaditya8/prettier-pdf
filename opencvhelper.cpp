@@ -103,7 +103,7 @@ void colorThresh(cv::Mat& src, int threshold) {
 
 QImage documentFilter(const QImage &image) {
     cv::Mat src = imageToMat8(image);
-    double colorGain = 1.5;
+    double colorGain = 1.0;
     double colorBias = 0;
     int colorThreshold = 110;
     cv::convertScaleAbs(src, src, colorGain, colorBias);
@@ -122,7 +122,7 @@ QImage documentFilter(const QImage &image) {
     mask.release();
 
     // special color threshold algorithm
-    colorThresh(src, colorThreshold);
+    //colorThresh(src, colorThreshold);
     return mat8ToImage(src);
 }
 
