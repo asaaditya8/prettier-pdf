@@ -62,10 +62,12 @@ void MainWindow::createActions()
     // create actions, add them to menus
     openAction = new QAction("&Open Image", this);
     fileMenu->addAction(openAction);
-    openPdfAction = new QAction("&Open PDF", this);
+    openPdfAction = new QAction("Open PDF", this);
     fileMenu->addAction(openPdfAction);
     saveAsAction = new QAction("&Save as", this);
     fileMenu->addAction(saveAsAction);
+    savePdfAction = new QAction("Save PDF", this);
+    fileMenu->addAction(savePdfAction);
     exitAction = new QAction("E&xit", this);
     fileMenu->addAction(exitAction);
 
@@ -95,6 +97,7 @@ void MainWindow::createActions()
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
     connect(openPdfAction, SIGNAL(triggered(bool)), this, SLOT(openPdf()));
     connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveAs()));
+    connect(savePdfAction, SIGNAL(triggered(bool)), this, SLOT(savePdf()));
     connect(zoomInAction, SIGNAL(triggered(bool)), this, SLOT(zoomIn()));
     connect(zoomOutAction, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
     connect(prevAction, SIGNAL(triggered(bool)), this, SLOT(prevImage()));
@@ -123,6 +126,13 @@ void MainWindow::openImage()
 
 void MainWindow::openPdf()
 {
+    // TODO: clear the res folder before opening.
+    // TODO: find if convert works without ghostscript
+    // TODO: add save pdf.
+    // TODO: show page no.
+    // TODO: add filter all buttons
+    // TODO: set default scale to something
+    // TODO: maybe add scrolling view like word
     QFileDialog dialog(this);
     dialog.setWindowTitle("Open Image");
     dialog.setFileMode(QFileDialog::ExistingFile);
@@ -132,6 +142,7 @@ void MainWindow::openPdf()
         filePaths = dialog.selectedFiles();
         QProcess process;
         process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
+        //process.start("cmd", QStringList() << "/c" << "convert.exe" << "-density" << "150x150" << "-units" << "PixelsPerInch" << filePaths.at(0) << "res/pg.png");
         process.start("cmd", QStringList() << "/c" << "pdftopng.exe" << filePaths.at(0) << "res/pg");
         if (!process.waitForFinished()) {
             // Now your app is running.
@@ -139,7 +150,7 @@ void MainWindow::openPdf()
         }
 
         isPDF = true;
-        showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-000001.png"));
+        showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-1.png"));
     }
 
 
@@ -231,6 +242,43 @@ void MainWindow::saveAs()
     }
 }
 
+void MainWindow::savePdf()
+{
+    if (currentImage == nullptr) {
+        QMessageBox::information(this, "Information", "Nothing to save.");
+        return;
+    }
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Save PDF As ...");
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilter(tr("PDFs (*.pdf)"));
+    QStringList fileNames;
+    if (dialog.exec()) {
+        fileNames = dialog.selectedFiles();
+        if (QRegExp(".+\\.(pdf)").exactMatch(fileNames.at(0))) {
+            //currentImage->pixmap().save(fileNames.at(0));
+            QProcess process;
+            process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
+            //QFileInfo current(currentImagePath);
+            //QDir dir = current.absoluteDir();
+            QStringList args;
+            args << "/c" << "convert.exe" << "res/*.png";
+            //args << "-density" << "150x150" << "-units" << "PixelsPerInch";
+            //args << "-resize" << "1240x1754" << "-extent" << "1240x1754" << "-gravity" << "center";
+            //args << "-compress" << "zip" << "-quality" << "90";
+            args << fileNames.at(0);
+            process.start("cmd", args);
+            if (!process.waitForFinished()) {
+                // Now your app is running.
+                QMessageBox::information(this, "Error", "Could not save PDF.");
+            }
+        }
+        else {
+            QMessageBox::information(this, "Information", "Save error: bad format or filename.");
+        }
+    }
+}
 
 void MainWindow::filterImage() {
     if (currentImage == nullptr) {

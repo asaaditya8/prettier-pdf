@@ -40,6 +40,7 @@ private slots:
     void prevImage();
     void nextImage();
     void saveAs();
+    void savePdf();
     void filterImage();
     void applyFilters();
     void undoFilter();
@@ -59,7 +60,8 @@ private:
 
     QAction* openAction;
     QAction *openPdfAction;
-    QAction *saveAsAction;
+    QAction* saveAsAction;
+    QAction *savePdfAction;
     QAction *exitAction;
     QAction *zoomInAction;
     QAction *zoomOutAction;
