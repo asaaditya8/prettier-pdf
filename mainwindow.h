@@ -17,6 +17,7 @@
 #include <QGraphicsPixmapItem>
 
 #include <vector>
+#include "images2pdf.h"
 
 class MainWindow : public QMainWindow
 {
@@ -44,6 +45,7 @@ private slots:
     void filterImage();
     void applyFilters();
     void undoFilter();
+    void processFinished(bool);
 
 private:
     QMenu *fileMenu;
@@ -77,6 +79,8 @@ private:
     bool isPDF;
     bool isEdited;
     std::vector<std::function<QImage(QImage const&)>> history;
+
+    Images2PDF* _convertor;
 };
 
 

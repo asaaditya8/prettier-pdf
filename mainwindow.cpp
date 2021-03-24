@@ -4,6 +4,8 @@
 
 #include "mainwindow.h"
 #include "opencvhelper.h"
+#include "QPDFWriter"
+#include "images2pdf.h"
 
 #include <QApplication>
 #include <QFileDialog>
@@ -13,11 +15,12 @@
 #include <QDebug>
 #include <QProcess>
 
-MainWindow::MainWindow(QWidget *parent) :
-        QMainWindow(parent)
-        , fileMenu(nullptr)
-        , viewMenu(nullptr)
-        , currentImage(nullptr)
+MainWindow::MainWindow(QWidget* parent) :
+    QMainWindow(parent)
+    , fileMenu(nullptr)
+    , viewMenu(nullptr)
+    , currentImage(nullptr)
+    , _convertor(NULL)
 {
     initUI();
 }
@@ -150,7 +153,7 @@ void MainWindow::openPdf()
         }
 
         isPDF = true;
-        showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-1.png"));
+        showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-000001.png"));
     }
 
 
@@ -257,26 +260,30 @@ void MainWindow::savePdf()
     if (dialog.exec()) {
         fileNames = dialog.selectedFiles();
         if (QRegExp(".+\\.(pdf)").exactMatch(fileNames.at(0))) {
-            //currentImage->pixmap().save(fileNames.at(0));
-            QProcess process;
-            process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
-            //QFileInfo current(currentImagePath);
-            //QDir dir = current.absoluteDir();
-            QStringList args;
-            args << "/c" << "convert.exe" << "res/*.png";
-            //args << "-density" << "150x150" << "-units" << "PixelsPerInch";
-            //args << "-resize" << "1240x1754" << "-extent" << "1240x1754" << "-gravity" << "center";
-            //args << "-compress" << "zip" << "-quality" << "90";
-            args << fileNames.at(0);
-            process.start("cmd", args);
-            if (!process.waitForFinished()) {
-                // Now your app is running.
-                QMessageBox::information(this, "Error", "Could not save PDF.");
-            }
+            //currentImage->pixmap().save(fileNames.at(0
+            _convertor = new Images2PDF(QString("C:/Users/Aaditya Singh/Pictures/out/res"), fileNames.at(0));
+            connect(_convertor, SIGNAL(finished(bool)), this, SLOT(processFinished(bool)));
+            _convertor->start();
+            //QPdfWriter()
         }
         else {
             QMessageBox::information(this, "Information", "Save error: bad format or filename.");
         }
+    }
+}
+
+
+void MainWindow::processFinished(bool success)
+{
+    if (success) {
+        QMessageBox::information(this, "Information", "Succesfully saved pdf.");
+    }
+    else if (_convertor) {
+        QMessageBox::information(this, "Information", "Error in saving pdf.");
+    }
+    if (_convertor) {
+        delete _convertor;
+        _convertor = NULL;
     }
 }
 
