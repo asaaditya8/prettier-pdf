@@ -41,7 +41,9 @@ private slots:
     void prevImage();
     void nextImage();
     void saveAs();
+    void saveImage();
     void savePdf();
+    void close();
     void filterImage();
     void applyFilters();
     void undoFilter();
@@ -51,8 +53,9 @@ private:
     QMenu *fileMenu;
     QMenu *viewMenu;
 
-    QToolBar *fileToolBar;
+    //QToolBar *fileToolBar;
     QToolBar *viewToolBar;
+    //QToolBar* closeToolBar;
 
     QGraphicsScene *imageScene;
     QGraphicsView *imageView;
@@ -63,7 +66,8 @@ private:
     QAction* openAction;
     QAction *openPdfAction;
     QAction* saveAsAction;
-    QAction *savePdfAction;
+    QAction* savePdfAction;
+    QAction* closeAction;
     QAction *exitAction;
     QAction *zoomInAction;
     QAction *zoomOutAction;
@@ -76,6 +80,7 @@ private:
     QGraphicsPixmapItem *currentImage;
     QImage lastImage;
     bool lastImageAvailable;
+    bool isOpen;
     bool isPDF;
     bool isEdited;
     std::vector<std::function<QImage(QImage const&)>> history;

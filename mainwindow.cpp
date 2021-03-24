@@ -14,6 +14,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 #include <QProcess>
+#include <QSpacerItem>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent)
@@ -22,6 +23,10 @@ MainWindow::MainWindow(QWidget* parent) :
     , currentImage(nullptr)
     , _convertor(NULL)
 {
+    // initialize vars
+    isPDF = false;
+    isEdited = false;
+
     initUI();
 }
 
@@ -37,8 +42,9 @@ void MainWindow::initUI()
     viewMenu = menuBar()->addMenu("&View");
 
     // setup toolbar
-    fileToolBar = addToolBar("File");
+    //fileToolBar = addToolBar("File");
     viewToolBar = addToolBar("View");
+    //closeToolBar = addToolBar("Close");
 
 
     // main area for image display
@@ -51,10 +57,6 @@ void MainWindow::initUI()
     mainStatusLabel = new QLabel(mainStatusBar);
     mainStatusBar->addPermanentWidget(mainStatusLabel);
     mainStatusLabel->setText("Image Information will be here!");
-
-    // initialize vars
-    isPDF = false;
-    isEdited = false;
 
     createActions();
 }
@@ -69,10 +71,10 @@ void MainWindow::createActions()
     fileMenu->addAction(openPdfAction);
     saveAsAction = new QAction("&Save as", this);
     fileMenu->addAction(saveAsAction);
-    savePdfAction = new QAction("Save PDF", this);
-    fileMenu->addAction(savePdfAction);
     exitAction = new QAction("E&xit", this);
     fileMenu->addAction(exitAction);
+
+    
 
     zoomInAction = new QAction("Zoom in", this);
     viewMenu->addAction(zoomInAction);
@@ -85,34 +87,56 @@ void MainWindow::createActions()
     filterAction = new QAction("Filter", this);
     undoAction = new QAction("Undo", this);
 
+    closeAction = new QAction("Close", this);
+
     // add actions to toolbars
-    fileToolBar->addAction(openAction);
-    fileToolBar->addAction(openPdfAction);
+    viewToolBar->addAction(openAction);
+    viewToolBar->addAction(openPdfAction);
+
+    QWidget* spacer1 = new QWidget(this);
+    spacer1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    viewToolBar->addWidget(spacer1);
     viewToolBar->addAction(zoomInAction);
     viewToolBar->addAction(zoomOutAction);
     viewToolBar->addAction(prevAction);
     viewToolBar->addAction(nextAction);
     viewToolBar->addAction(filterAction);
     viewToolBar->addAction(undoAction);
+    QWidget* spacer2 = new QWidget(this);
+    spacer2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    viewToolBar->addWidget(spacer2);
+
+    viewToolBar->addAction(closeAction);
+    viewToolBar->addAction(saveAsAction);
+    
+    prevAction->setEnabled(false);
+    nextAction->setEnabled(false);
+    zoomInAction->setEnabled(false);
+    zoomOutAction->setEnabled(false);
+    filterAction->setEnabled(false);
+    undoAction->setEnabled(false);
+    closeAction->setEnabled(false);
+    saveAsAction->setEnabled(false);
 
     // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
     connect(openPdfAction, SIGNAL(triggered(bool)), this, SLOT(openPdf()));
     connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveAs()));
-    connect(savePdfAction, SIGNAL(triggered(bool)), this, SLOT(savePdf()));
     connect(zoomInAction, SIGNAL(triggered(bool)), this, SLOT(zoomIn()));
     connect(zoomOutAction, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
     connect(prevAction, SIGNAL(triggered(bool)), this, SLOT(prevImage()));
     connect(nextAction, SIGNAL(triggered(bool)), this, SLOT(nextImage()));
     connect(filterAction, SIGNAL(triggered(bool)), this, SLOT(filterImage()));
     connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undoFilter()));
+    connect(closeAction, SIGNAL(triggered(bool)), this, SLOT(close()));
 
     setupShortcuts();
 }
 
 void MainWindow::openImage()
 {
+    
     QFileDialog dialog(this);
     dialog.setWindowTitle("Open Image");
     dialog.setFileMode(QFileDialog::ExistingFile);
@@ -121,42 +145,86 @@ void MainWindow::openImage()
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
         isPDF = false;
+
+        zoomInAction->setEnabled(true);
+        zoomOutAction->setEnabled(true);
+        filterAction->setEnabled(true);
+        undoAction->setEnabled(true);
+        closeAction->setEnabled(true);
+        saveAsAction->setEnabled(true);
+        nextAction->setEnabled(false);
+        prevAction->setEnabled(false);
+
         showImage(filePaths.at(0));
     }
 
 
 }
 
+void MainWindow::close() {
+    isPDF = false;
+    isOpen = false;
+    isEdited = false;
+    lastImageAvailable = false;
+    mainStatusLabel->setText(QString());
+    currentImagePath = QString();
+    history.clear();
+    lastImage = QImage();
+    currentImage->setPixmap(QPixmap());
+
+    prevAction->setEnabled(false);
+    nextAction->setEnabled(false);
+    zoomInAction->setEnabled(false);
+    zoomOutAction->setEnabled(false);
+    filterAction->setEnabled(false);
+    undoAction->setEnabled(false);
+    closeAction->setEnabled(false);
+    saveAsAction->setEnabled(false);
+}
+
+
 void MainWindow::openPdf()
 {
-    // TODO: clear the res folder before opening.
-    // TODO: find if convert works without ghostscript
-    // TODO: add save pdf.
     // TODO: show page no.
     // TODO: add filter all buttons
     // TODO: set default scale to something
-    // TODO: maybe add scrolling view like word
+    // TODO: maybe add scrolling view like word 
+
+    QDir dir(QString("C:/Users/Aaditya Singh/Pictures/out/res"));
+    for (const QString& dirFile : dir.entryList()) {
+        dir.remove(dirFile);
+    }
+
     QFileDialog dialog(this);
     dialog.setWindowTitle("Open Image");
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setNameFilter(tr("PDFs (*.pdf)"));
     QStringList filePaths;
+
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
         QProcess process;
         process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
-        //process.start("cmd", QStringList() << "/c" << "convert.exe" << "-density" << "150x150" << "-units" << "PixelsPerInch" << filePaths.at(0) << "res/pg.png");
         process.start("cmd", QStringList() << "/c" << "pdftopng.exe" << filePaths.at(0) << "res/pg");
+
         if (!process.waitForFinished()) {
-            // Now your app is running.
             QMessageBox::information(this, "Information", "Could not convert to PNG.");
+            return;
         }
 
         isPDF = true;
+
+        prevAction->setEnabled(true);
+        nextAction->setEnabled(true);
+        zoomInAction->setEnabled(true);
+        zoomOutAction->setEnabled(true);
+        filterAction->setEnabled(true);
+        undoAction->setEnabled(true);
+        closeAction->setEnabled(true);
+        saveAsAction->setEnabled(true);
+
         showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-000001.png"));
     }
-
-
 }
 
 void MainWindow::showImage(QString path)
@@ -223,7 +291,16 @@ void MainWindow::nextImage()
     }
 }
 
-void MainWindow::saveAs()
+void MainWindow::saveAs() {
+    if (isPDF) {
+        savePdf();
+    }
+    else {
+        saveImage();
+    }
+}
+
+void MainWindow::saveImage()
 {
     if (currentImage == nullptr) {
         QMessageBox::information(this, "Information", "Nothing to save.");
@@ -245,8 +322,9 @@ void MainWindow::saveAs()
     }
 }
 
-void MainWindow::savePdf()
-{
+
+
+void MainWindow::savePdf() {
     if (currentImage == nullptr) {
         QMessageBox::information(this, "Information", "Nothing to save.");
         return;
@@ -260,11 +338,9 @@ void MainWindow::savePdf()
     if (dialog.exec()) {
         fileNames = dialog.selectedFiles();
         if (QRegExp(".+\\.(pdf)").exactMatch(fileNames.at(0))) {
-            //currentImage->pixmap().save(fileNames.at(0
             _convertor = new Images2PDF(QString("C:/Users/Aaditya Singh/Pictures/out/res"), fileNames.at(0));
             connect(_convertor, SIGNAL(finished(bool)), this, SLOT(processFinished(bool)));
             _convertor->start();
-            //QPdfWriter()
         }
         else {
             QMessageBox::information(this, "Information", "Save error: bad format or filename.");
@@ -272,9 +348,7 @@ void MainWindow::savePdf()
     }
 }
 
-
-void MainWindow::processFinished(bool success)
-{
+void MainWindow::processFinished(bool success){
     if (success) {
         QMessageBox::information(this, "Information", "Succesfully saved pdf.");
     }
