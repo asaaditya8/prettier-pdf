@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QProcess>
 #include <QSpacerItem>
+#include <QStandardPaths>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent)
@@ -26,6 +27,13 @@ MainWindow::MainWindow(QWidget* parent) :
     // initialize vars
     isPDF = false;
     isEdited = false;
+
+    QString loc = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    dir = QDir(loc);
+    if(!dir.exists(QString("WashDir"))){
+        dir.mkdir(QString("WashDir"));
+    }
+    dir.cd(QString("WashDir"));
 
     initUI();
 }
@@ -190,7 +198,6 @@ void MainWindow::openPdf()
     // TODO: set default scale to something
     // TODO: maybe add scrolling view like word 
 
-    QDir dir(QString("C:/Users/Aaditya Singh/Pictures/out/res"));
     for (const QString& dirFile : dir.entryList()) {
         dir.remove(dirFile);
     }
@@ -204,8 +211,14 @@ void MainWindow::openPdf()
     if (dialog.exec()) {
         filePaths = dialog.selectedFiles();
         QProcess process;
-        process.setWorkingDirectory("C:/Users/Aaditya Singh/Pictures/out");
-        process.start("cmd", QStringList() << "/c" << "pdftopng.exe" << filePaths.at(0) << "res/pg");
+        process.setWorkingDirectory(QCoreApplication::applicationDirPath());
+
+        QString basepath = dir.absolutePath() + "/pg";
+        #ifdef Q_OS_LINUX
+            process.start("pdftopng", QStringList() << filePaths.at(0) << basepath);
+        #else
+            process.start("cmd", QStringList() << "/c" << "pdftopng.exe" << filePaths.at(0) << basepath);
+        #endif
 
         if (!process.waitForFinished()) {
             QMessageBox::information(this, "Information", "Could not convert to PNG.");
@@ -223,7 +236,7 @@ void MainWindow::openPdf()
         closeAction->setEnabled(true);
         saveAsAction->setEnabled(true);
 
-        showImage(QString("C:/Users/Aaditya Singh/Pictures/out/res/pg-000001.png"));
+        showImage(QString(basepath+"-000001.png"));
     }
 }
 
@@ -338,7 +351,7 @@ void MainWindow::savePdf() {
     if (dialog.exec()) {
         fileNames = dialog.selectedFiles();
         if (QRegExp(".+\\.(pdf)").exactMatch(fileNames.at(0))) {
-            _convertor = new Images2PDF(QString("C:/Users/Aaditya Singh/Pictures/out/res"), fileNames.at(0));
+            _convertor = new Images2PDF(dir.absolutePath(), fileNames.at(0));
             connect(_convertor, SIGNAL(finished(bool)), this, SLOT(processFinished(bool)));
             _convertor->start();
         }

@@ -79,6 +79,7 @@ private:
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;
     QImage lastImage;
+    QDir dir;
     bool lastImageAvailable;
     bool isOpen;
     bool isPDF;
