@@ -4,9 +4,9 @@
 
 #include "mainwindow.h"
 #include "opencvhelper.h"
-#include "QPDFWriter"
 #include "images2pdf.h"
 
+#include <QtGui/QPdfWriter>
 #include <QApplication>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -186,7 +186,7 @@ void MainWindow::close() {
 void MainWindow::openPdf()
 {
     // TODO: show page no.
-    // TODO: add filter all buttons
+    // TODO: add filter all buttons 
     // TODO: set default scale to something
     // TODO: maybe add scrolling view like word 
 

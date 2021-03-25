@@ -15,7 +15,7 @@ set(REQUIRED_LIBS_QUALIFIED Qt5::Core Qt5::Gui Qt5::Widgets)
 
 if(WIN32)
     # set(PDF_LOCATION "C:\\dev\\PDF-Writer\\build2\\PDFWriter\\MinSizeRel\\PDFWriter.lib")
-    add_executable(${PROJECT_NAME} main.cpp mainwindow.cpp mainwindow.h opencvhelper.cpp opencvhelper.h images2pdf.h images2pdf.cpp)
+    add_executable(${PROJECT_NAME} WIN32 main.cpp mainwindow.cpp mainwindow.h opencvhelper.cpp opencvhelper.h images2pdf.h images2pdf.cpp)
 else()
     add_executable(${PROJECT_NAME} main.cpp mainwindow.cpp mainwindow.h opencvhelper.cpp opencvhelper.h images2pdf.h images2pdf.cpp)
     set(OpenCV_DIR /usr/local/include/opencv4)
