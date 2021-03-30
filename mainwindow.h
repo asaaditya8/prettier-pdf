@@ -47,14 +47,20 @@ private slots:
     void applyFilters();
     void undoFilter();
     void processFinished(bool);
+    void shiftLeft();
+    void shiftRight();
+    void insertLeft();
+    void insertRight();
 
 private:
+    void toggleActions(bool);
+
     QMenu *fileMenu;
     QMenu *viewMenu;
 
     //QToolBar *fileToolBar;
     QToolBar *viewToolBar;
-    //QToolBar* closeToolBar;
+    QToolBar *editToolBar;
 
     QGraphicsScene *imageScene;
     QGraphicsView *imageView;
@@ -74,6 +80,11 @@ private:
     QAction *nextAction;
     QAction *filterAction;
     QAction *undoAction;
+    QAction *shiftLeftAction;
+    QAction *shiftRightAction;
+    QAction *insertLeftAction;
+    QAction *insertRightAction;
+
 
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;

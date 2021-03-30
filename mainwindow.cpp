@@ -52,7 +52,8 @@ void MainWindow::initUI()
     // setup toolbar
     //fileToolBar = addToolBar("File");
     viewToolBar = addToolBar("View");
-    //closeToolBar = addToolBar("Close");
+    addToolBarBreak(Qt::TopToolBarArea);
+    editToolBar = addToolBar("Modify");
 
 
     // main area for image display
@@ -100,6 +101,11 @@ void MainWindow::createActions()
 
     closeAction = new QAction("Close", this);
 
+    shiftLeftAction = new QAction("Shift Left", this);
+    shiftRightAction = new QAction("Shift Right", this);
+    insertLeftAction = new QAction("Insert Left", this);
+    insertRightAction = new QAction("Insert Right", this);
+
     // add actions to toolbars
     viewToolBar->addAction(openAction);
     viewToolBar->addAction(openPdfAction);
@@ -107,12 +113,12 @@ void MainWindow::createActions()
     QWidget* spacer1 = new QWidget(this);
     spacer1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     viewToolBar->addWidget(spacer1);
-    viewToolBar->addAction(zoomInAction);
-    viewToolBar->addAction(zoomOutAction);
-    viewToolBar->addAction(prevAction);
-    viewToolBar->addAction(nextAction);
-    viewToolBar->addAction(filterAction);
-    viewToolBar->addAction(undoAction);
+
+    viewToolBar->addAction(shiftLeftAction);
+    viewToolBar->addAction(shiftRightAction);
+    viewToolBar->addAction(insertLeftAction);
+    viewToolBar->addAction(insertRightAction);
+
     QWidget* spacer2 = new QWidget(this);
     spacer2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     viewToolBar->addWidget(spacer2);
@@ -121,20 +127,29 @@ void MainWindow::createActions()
     viewToolBar->addAction(saveAsAction);
     viewToolBar->addAction(savePdfAction);
 
-    prevAction->setEnabled(false);
-    nextAction->setEnabled(false);
-    zoomInAction->setEnabled(false);
-    zoomOutAction->setEnabled(false);
-    filterAction->setEnabled(false);
-    undoAction->setEnabled(false);
-    closeAction->setEnabled(false);
-    saveAsAction->setEnabled(false);
+    QWidget* spacer3 = new QWidget(this);
+    spacer3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    editToolBar->addWidget(spacer3);
+
+    editToolBar->addAction(zoomInAction);
+    editToolBar->addAction(zoomOutAction);
+    editToolBar->addAction(prevAction);
+    editToolBar->addAction(nextAction);
+    editToolBar->addAction(filterAction);
+    editToolBar->addAction(undoAction);
+
+    QWidget* spacer4 = new QWidget(this);
+    spacer4->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    editToolBar->addWidget(spacer4);
+
+    toggleActions(false);
 
     // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
     connect(openPdfAction, SIGNAL(triggered(bool)), this, SLOT(openPdf()));
     connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveImage()));
+    connect(savePdfAction, SIGNAL(triggered(bool)), this, SLOT(savePdf()));
     connect(zoomInAction, SIGNAL(triggered(bool)), this, SLOT(zoomIn()));
     connect(zoomOutAction, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
     connect(prevAction, SIGNAL(triggered(bool)), this, SLOT(prevImage()));
@@ -142,8 +157,28 @@ void MainWindow::createActions()
     connect(filterAction, SIGNAL(triggered(bool)), this, SLOT(filterImage()));
     connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undoFilter()));
     connect(closeAction, SIGNAL(triggered(bool)), this, SLOT(closeThis()));
+    connect(shiftLeftAction, SIGNAL(triggered(bool)), this, SLOT(shiftLeft()));
+    connect(shiftRightAction, SIGNAL(triggered(bool)), this, SLOT(shiftRight()));
+    connect(insertLeftAction, SIGNAL(triggered(bool)), this, SLOT(insertLeft()));
+    connect(insertRightAction, SIGNAL(triggered(bool)), this, SLOT(insertRight()));
 
     setupShortcuts();
+}
+
+void MainWindow::toggleActions(bool state){
+    prevAction->setEnabled(state);
+    nextAction->setEnabled(state);
+    zoomInAction->setEnabled(state);
+    zoomOutAction->setEnabled(state);
+    filterAction->setEnabled(state);
+    undoAction->setEnabled(state);
+    closeAction->setEnabled(state);
+    saveAsAction->setEnabled(state);
+    savePdfAction->setEnabled(state);
+    shiftLeftAction->setEnabled(state);
+    shiftRightAction->setEnabled(state);
+    insertLeftAction->setEnabled(state);
+    insertRightAction->setEnabled(state);
 }
 
 void MainWindow::openImage()
@@ -158,12 +193,7 @@ void MainWindow::openImage()
         filePaths = dialog.selectedFiles();
         isPDF = false;
 
-        zoomInAction->setEnabled(true);
-        zoomOutAction->setEnabled(true);
-        filterAction->setEnabled(true);
-        undoAction->setEnabled(true);
-        closeAction->setEnabled(true);
-        saveAsAction->setEnabled(true);
+        toggleActions(true);
         nextAction->setEnabled(false);
         prevAction->setEnabled(false);
 
@@ -183,15 +213,7 @@ void MainWindow::closeThis() {
     history.clear();
     lastImage = QImage();
     currentImage->setPixmap(QPixmap());
-
-    prevAction->setEnabled(false);
-    nextAction->setEnabled(false);
-    zoomInAction->setEnabled(false);
-    zoomOutAction->setEnabled(false);
-    filterAction->setEnabled(false);
-    undoAction->setEnabled(false);
-    closeAction->setEnabled(false);
-    saveAsAction->setEnabled(false);
+    toggleActions(false);
 }
 
 
@@ -232,16 +254,24 @@ void MainWindow::openPdf()
 
         isPDF = true;
 
-        prevAction->setEnabled(true);
-        nextAction->setEnabled(true);
-        zoomInAction->setEnabled(true);
-        zoomOutAction->setEnabled(true);
-        filterAction->setEnabled(true);
-        undoAction->setEnabled(true);
-        closeAction->setEnabled(true);
-        saveAsAction->setEnabled(true);
+        toggleActions(true);
 
-        showImage(QString(basepath+"-000001.png"));
+        dir.refresh();
+        QStringList nameFilters;
+        nameFilters << "*.png";
+        auto filenames = dir.entryList(nameFilters);
+        std::stringstream ss;
+        for(const QString& oldName : filenames){
+            QString newName(oldName);
+            ss << "pg-" << newName.toStdString().substr(5, newName.length()-9).c_str() << "00.png";
+            newName = QString(ss.str().c_str());
+            ss.str("");
+            ss.clear();
+//            std::cout << newName.toStdString() << "\n";
+            dir.rename(oldName, newName);
+        }
+
+        showImage(QString(basepath+"-000100.png"));
     }
 }
 
@@ -307,6 +337,22 @@ void MainWindow::nextImage()
     } else {
         QMessageBox::information(this, "Information", "Current image is the last one.");
     }
+}
+
+void MainWindow::shiftLeft(){
+
+}
+
+void MainWindow::shiftRight(){
+
+}
+
+void MainWindow::insertLeft(){
+
+}
+
+void MainWindow::insertRight(){
+
 }
 
 void MainWindow::saveImage()
