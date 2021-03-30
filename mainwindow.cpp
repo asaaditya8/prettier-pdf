@@ -183,7 +183,6 @@ void MainWindow::toggleActions(bool state){
 
 void MainWindow::openImage()
 {
-    
     QFileDialog dialog(this);
     dialog.setWindowTitle("Open Image");
     dialog.setFileMode(QFileDialog::ExistingFile);
@@ -199,8 +198,6 @@ void MainWindow::openImage()
 
         showImage(filePaths.at(0));
     }
-
-
 }
 
 void MainWindow::closeThis() {
@@ -208,10 +205,13 @@ void MainWindow::closeThis() {
     isOpen = false;
     isEdited = false;
     lastImageAvailable = false;
+    current_pg = 0;
     mainStatusLabel->setText(QString());
     currentImagePath = QString();
     history.clear();
     order.clear();
+    delete _convertor;
+    _convertor = nullptr;
     lastImage = QImage();
     currentImage->setPixmap(QPixmap());
     toggleActions(false);
@@ -256,9 +256,6 @@ void MainWindow::openPdf()
         isPDF = true;
 
         toggleActions(true);
-
-
-//        order.push_back()
 
         dir.refresh();
         QStringList nameFilters;
@@ -354,16 +351,52 @@ void MainWindow::shiftRight(){
 }
 
 void MainWindow::insertLeft(){
-    QFileInfo current(currentImagePath);
-//    current.fileName();
-    char num_s[6];
+    char num_s[7];
     QString newName;
-//    snprintf(num_s, 6, "%06d", num + 1);
+    snprintf(num_s, 7, "%06d", static_cast<int>(order.size()) + 1);
+
     newName = QString("pg-%1.png").arg(num_s);
+
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Open Image");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    QStringList filePaths;
+    if (dialog.exec()) {
+        order.insert(order.begin()+current_pg, newName);
+
+        filePaths = dialog.selectedFiles();
+        QString name = QFile(filePaths.at(0)).fileName();
+        QString newPath = QString("%1/%2").arg(dir.absolutePath()).arg(newName);
+        QFile::copy(filePaths.at(0), newPath);
+
+        showImage(newPath);
+    }
 }
 
 void MainWindow::insertRight(){
+    char num_s[7];
+    QString newName;
+    snprintf(num_s, 7, "%06d", static_cast<int>(order.size()) + 1);
 
+    newName = QString("pg-%1.png").arg(num_s);
+
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Open Image");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    QStringList filePaths;
+    if (dialog.exec()) {
+        current_pg++;
+        order.insert(order.begin()+current_pg, newName);
+
+        filePaths = dialog.selectedFiles();
+        QString name = QFile(filePaths.at(0)).fileName();
+        QString newPath = QString("%1/%2").arg(dir.absolutePath()).arg(newName);
+        QFile::copy(filePaths.at(0), newPath);
+
+        showImage(newPath);
+    }
 }
 
 void MainWindow::saveImage()
