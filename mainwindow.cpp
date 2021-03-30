@@ -220,7 +220,7 @@ void MainWindow::closeThis() {
 
 void MainWindow::openPdf()
 {
-    // TODO: add page, move page
+    // TODO: save pdf
     // TODO: show page no.
     // TODO: add filter all buttons : progress bar
     // TODO: set default scale to something
