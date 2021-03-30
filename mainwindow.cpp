@@ -211,6 +211,7 @@ void MainWindow::closeThis() {
     mainStatusLabel->setText(QString());
     currentImagePath = QString();
     history.clear();
+    order.clear();
     lastImage = QImage();
     currentImage->setPixmap(QPixmap());
     toggleActions(false);
@@ -256,22 +257,27 @@ void MainWindow::openPdf()
 
         toggleActions(true);
 
+
+//        order.push_back()
+
         dir.refresh();
         QStringList nameFilters;
         nameFilters << "*.png";
         auto filenames = dir.entryList(nameFilters);
-        std::stringstream ss;
+//        std::stringstream ss;
         for(const QString& oldName : filenames){
-            QString newName(oldName);
-            ss << "pg-" << newName.toStdString().substr(5, newName.length()-9).c_str() << "00.png";
-            newName = QString(ss.str().c_str());
-            ss.str("");
-            ss.clear();
-//            std::cout << newName.toStdString() << "\n";
-            dir.rename(oldName, newName);
+            order.push_back(oldName);
         }
-
-        showImage(QString(basepath+"-000100.png"));
+        current_pg = 0;
+//            QString newName(oldName);
+//            ss << "pg-" << newName.toStdString().substr(5, newName.length()-9).c_str() << "00.png";
+//            newName = QString(ss.str().c_str());
+//            ss.str("");
+//            ss.clear();
+//            dir.rename(oldName, newName);
+//        }
+//
+        showImage(QString(basepath+"-000001.png"));
     }
 }
 
@@ -308,14 +314,8 @@ void MainWindow::prevImage()
     if (isPDF && isEdited) {
         currentImage->pixmap().save(currentImagePath, nullptr, 0);
     }
-    QFileInfo current(currentImagePath);
-    QDir dir = current.absoluteDir();
-    QStringList nameFilters;
-    nameFilters << "*.png" << "*.bmp" << "*.jpg" << "*.jpeg";
-    QStringList fileNames = dir.entryList(nameFilters, QDir::Files, QDir::Name);
-    int idx = fileNames.indexOf(QRegExp(QRegExp::escape(current.fileName())));
-    if(idx > 0) {
-        showImage(dir.absoluteFilePath(fileNames.at(idx - 1)));
+    if(current_pg > 0) {
+        showImage(dir.absoluteFilePath(order[--current_pg]));
     } else {
         QMessageBox::information(this, "Information", "Current image is the first one.");
     }
@@ -326,29 +326,40 @@ void MainWindow::nextImage()
     if (isPDF && isEdited) {
         currentImage->pixmap().save(currentImagePath, nullptr, 0);
     }
-    QFileInfo current(currentImagePath);
-    QDir dir = current.absoluteDir();
-    QStringList nameFilters;
-    nameFilters << "*.png" << "*.bmp" << "*.jpg";
-    QStringList fileNames = dir.entryList(nameFilters, QDir::Files, QDir::Name);
-    int idx = fileNames.indexOf(QRegExp(QRegExp::escape(current.fileName())));
-    if(idx < fileNames.size() - 1) {
-        showImage(dir.absoluteFilePath(fileNames.at(idx + 1)));
+    if(current_pg < order.size() - 1) {
+        showImage(dir.absoluteFilePath(order[++current_pg]));
     } else {
         QMessageBox::information(this, "Information", "Current image is the last one.");
     }
 }
 
 void MainWindow::shiftLeft(){
-
+    if(current_pg > 0){
+        std::swap(order[current_pg], order[current_pg-1]);
+        current_pg--;
+    }
+    for(auto& x: order){
+        std::cout << x.toStdString() << "\n";
+    }
 }
 
 void MainWindow::shiftRight(){
-
+    if(current_pg < order.size()-1){
+        std::swap(order[current_pg], order[current_pg+1]);
+        current_pg++;
+    }
+    for(auto& x: order){
+        std::cout << x.toStdString() << "\n";
+    }
 }
 
 void MainWindow::insertLeft(){
-
+    QFileInfo current(currentImagePath);
+//    current.fileName();
+    char num_s[6];
+    QString newName;
+//    snprintf(num_s, 6, "%06d", num + 1);
+    newName = QString("pg-%1.png").arg(num_s);
 }
 
 void MainWindow::insertRight(){

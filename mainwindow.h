@@ -17,6 +17,7 @@
 #include <QGraphicsPixmapItem>
 
 #include <vector>
+#include <deque>
 #include "images2pdf.h"
 
 class MainWindow : public QMainWindow
@@ -95,6 +96,8 @@ private:
     bool isPDF;
     bool isEdited;
     std::vector<std::function<QImage(QImage const&)>> history;
+    std::deque<QString> order;
+    int current_pg;
 
     Images2PDF* _convertor;
 };
