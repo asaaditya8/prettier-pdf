@@ -77,8 +77,11 @@ void MainWindow::createActions()
     fileMenu->addAction(openAction);
     openPdfAction = new QAction("Open PDF", this);
     fileMenu->addAction(openPdfAction);
-    saveAsAction = new QAction("&Save as", this);
+    saveAsAction = new QAction("Page -> PNG", this);
+    saveAsAction->setToolTip("Save/Extract Current Page");
     fileMenu->addAction(saveAsAction);
+    savePdfAction = new QAction("&Save PDF", this);
+    fileMenu->addAction(savePdfAction);
     exitAction = new QAction("E&xit", this);
     fileMenu->addAction(exitAction);
 
@@ -116,7 +119,8 @@ void MainWindow::createActions()
 
     viewToolBar->addAction(closeAction);
     viewToolBar->addAction(saveAsAction);
-    
+    viewToolBar->addAction(savePdfAction);
+
     prevAction->setEnabled(false);
     nextAction->setEnabled(false);
     zoomInAction->setEnabled(false);
@@ -130,14 +134,14 @@ void MainWindow::createActions()
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
     connect(openPdfAction, SIGNAL(triggered(bool)), this, SLOT(openPdf()));
-    connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveAs()));
+    connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveImage()));
     connect(zoomInAction, SIGNAL(triggered(bool)), this, SLOT(zoomIn()));
     connect(zoomOutAction, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
     connect(prevAction, SIGNAL(triggered(bool)), this, SLOT(prevImage()));
     connect(nextAction, SIGNAL(triggered(bool)), this, SLOT(nextImage()));
     connect(filterAction, SIGNAL(triggered(bool)), this, SLOT(filterImage()));
     connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undoFilter()));
-    connect(closeAction, SIGNAL(triggered(bool)), this, SLOT(close()));
+    connect(closeAction, SIGNAL(triggered(bool)), this, SLOT(closeThis()));
 
     setupShortcuts();
 }
@@ -169,7 +173,7 @@ void MainWindow::openImage()
 
 }
 
-void MainWindow::close() {
+void MainWindow::closeThis() {
     isPDF = false;
     isOpen = false;
     isEdited = false;
@@ -193,8 +197,9 @@ void MainWindow::close() {
 
 void MainWindow::openPdf()
 {
+    // TODO: add page, move page
     // TODO: show page no.
-    // TODO: add filter all buttons 
+    // TODO: add filter all buttons : progress bar
     // TODO: set default scale to something
     // TODO: maybe add scrolling view like word 
 
@@ -301,15 +306,6 @@ void MainWindow::nextImage()
         showImage(dir.absoluteFilePath(fileNames.at(idx + 1)));
     } else {
         QMessageBox::information(this, "Information", "Current image is the last one.");
-    }
-}
-
-void MainWindow::saveAs() {
-    if (isPDF) {
-        savePdf();
-    }
-    else {
-        saveImage();
     }
 }
 

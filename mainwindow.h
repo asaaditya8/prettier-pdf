@@ -40,10 +40,9 @@ private slots:
     void zoomOut();
     void prevImage();
     void nextImage();
-    void saveAs();
     void saveImage();
     void savePdf();
-    void close();
+    void closeThis();
     void filterImage();
     void applyFilters();
     void undoFilter();
