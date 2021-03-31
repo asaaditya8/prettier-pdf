@@ -181,6 +181,23 @@ void MainWindow::toggleActions(bool state){
     insertRightAction->setEnabled(state);
 }
 
+void MainWindow::closeThis() {
+    isPDF = false;
+    isOpen = false;
+    isEdited = false;
+    lastImageAvailable = false;
+    current_pg = 0;
+    mainStatusLabel->setText(QString());
+    currentImagePath = QString();
+    history.clear();
+    order.clear();
+    delete _convertor;
+    _convertor = nullptr;
+    lastImage = QImage();
+    currentImage->setPixmap(QPixmap());
+    toggleActions(false);
+}
+
 void MainWindow::openImage()
 {
     QFileDialog dialog(this);
@@ -200,29 +217,11 @@ void MainWindow::openImage()
     }
 }
 
-void MainWindow::closeThis() {
-    isPDF = false;
-    isOpen = false;
-    isEdited = false;
-    lastImageAvailable = false;
-    current_pg = 0;
-    mainStatusLabel->setText(QString());
-    currentImagePath = QString();
-    history.clear();
-    order.clear();
-    delete _convertor;
-    _convertor = nullptr;
-    lastImage = QImage();
-    currentImage->setPixmap(QPixmap());
-    toggleActions(false);
-}
-
-
 void MainWindow::openPdf()
 {
-    // TODO: save pdf
     // TODO: show page no.
     // TODO: add filter all buttons : progress bar
+    // TODO: fix build warnings
     // TODO: set default scale to something
     // TODO: maybe add scrolling view like word 
 
@@ -261,19 +260,12 @@ void MainWindow::openPdf()
         QStringList nameFilters;
         nameFilters << "*.png";
         auto filenames = dir.entryList(nameFilters);
-//        std::stringstream ss;
-        for(const QString& oldName : filenames){
-            order.push_back(oldName);
+
+        for(const QString& file : filenames){
+            order.push_back(file);
         }
         current_pg = 0;
-//            QString newName(oldName);
-//            ss << "pg-" << newName.toStdString().substr(5, newName.length()-9).c_str() << "00.png";
-//            newName = QString(ss.str().c_str());
-//            ss.str("");
-//            ss.clear();
-//            dir.rename(oldName, newName);
-//        }
-//
+
         showImage(QString(basepath+"-000001.png"));
     }
 }
@@ -437,7 +429,11 @@ void MainWindow::savePdf() {
     if (dialog.exec()) {
         fileNames = dialog.selectedFiles();
         if (QRegExp(".+\\.(pdf)").exactMatch(fileNames.at(0))) {
-            _convertor = new Images2PDF(dir.absolutePath(), fileNames.at(0));
+            QStringList l;
+            for(const QString& x : order){
+                l << x;
+            }
+            _convertor = new Images2PDF(dir.absolutePath(), std::move(l), fileNames.at(0));
             connect(_convertor, SIGNAL(finished(bool)), this, SLOT(processFinished(bool)));
             _convertor->start();
         }

@@ -6,8 +6,9 @@
 #include <QPdfWriter>
 
 #include <iostream>
+#include <utility>
 
-Images2PDF::Images2PDF(QString source_dir, QString target_pdf) :
+Images2PDF::Images2PDF(const QString& source_dir, const QString& target_pdf) :
     _aborted(false)
 {
     _source_dir = new QDir(source_dir);
@@ -16,6 +17,15 @@ Images2PDF::Images2PDF(QString source_dir, QString target_pdf) :
     QStringList imageFilter;
     imageFilter << "*.jpg" << "*.jpeg" << "*.png";
     _images = _source_dir->entryList(imageFilter, QDir::Files | QDir::Readable, QDir::Name);
+}
+
+Images2PDF::Images2PDF(const QString& source_dir, QStringList filenames, const QString& target_pdf) :
+        _aborted(false)
+{
+    _source_dir = new QDir(source_dir);
+    _target_pdf = new QFileInfo(target_pdf);
+
+    _images = std::move(filenames);
 }
 
 Images2PDF::~Images2PDF()

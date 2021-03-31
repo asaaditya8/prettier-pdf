@@ -12,7 +12,8 @@ class Images2PDF : public QObject
 {
     Q_OBJECT
 public:
-    Images2PDF(QString source_dir, QString target_pdf);
+    Images2PDF(const QString& source_dir, const QString& target_pdf);
+    Images2PDF(const QString& source_dir, QStringList filenames, const QString& target_pdf);
     ~Images2PDF();
 
     int imageCount();
