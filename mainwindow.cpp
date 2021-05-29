@@ -5,8 +5,8 @@
 #include "mainwindow.h"
 #include "opencvhelper.h"
 #include "images2pdf.h"
+#include "qglobal.h"
 
-#include <QtGui/QPdfWriter>
 #include <QApplication>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget* parent) :
     , fileMenu(nullptr)
     , viewMenu(nullptr)
     , currentImage(nullptr)
-    , _convertor(NULL)
+    , _convertor(nullptr)
 {
     // initialize vars
     isPDF = false;
@@ -39,8 +39,7 @@ MainWindow::MainWindow(QWidget* parent) :
 }
 
 MainWindow::~MainWindow()
-{
-}
+= default;
 
 void MainWindow::initUI()
 {
@@ -110,7 +109,7 @@ void MainWindow::createActions()
     viewToolBar->addAction(openAction);
     viewToolBar->addAction(openPdfAction);
 
-    QWidget* spacer1 = new QWidget(this);
+    auto* spacer1 = new QWidget(this);
     spacer1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     viewToolBar->addWidget(spacer1);
 
@@ -119,7 +118,7 @@ void MainWindow::createActions()
     viewToolBar->addAction(insertLeftAction);
     viewToolBar->addAction(insertRightAction);
 
-    QWidget* spacer2 = new QWidget(this);
+    auto* spacer2 = new QWidget(this);
     spacer2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     viewToolBar->addWidget(spacer2);
 
@@ -127,7 +126,7 @@ void MainWindow::createActions()
     viewToolBar->addAction(saveAsAction);
     viewToolBar->addAction(savePdfAction);
 
-    QWidget* spacer3 = new QWidget(this);
+    auto* spacer3 = new QWidget(this);
     spacer3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     editToolBar->addWidget(spacer3);
 
@@ -138,7 +137,7 @@ void MainWindow::createActions()
     editToolBar->addAction(filterAction);
     editToolBar->addAction(undoAction);
 
-    QWidget* spacer4 = new QWidget(this);
+    auto* spacer4 = new QWidget(this);
     spacer4->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     editToolBar->addWidget(spacer4);
 
@@ -230,7 +229,7 @@ void MainWindow::openPdf()
     }
 
     QFileDialog dialog(this);
-    dialog.setWindowTitle("Open Image");
+    dialog.setWindowTitle("Open PDF");
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setNameFilter(tr("PDFs (*.pdf)"));
     QStringList filePaths;
@@ -270,7 +269,7 @@ void MainWindow::openPdf()
     }
 }
 
-void MainWindow::showImage(QString path)
+void MainWindow::showImage(const QString& path)
 {
     isEdited = false;
     history.clear();
@@ -344,10 +343,9 @@ void MainWindow::shiftRight(){
 
 void MainWindow::insertLeft(){
     char num_s[7];
-    QString newName;
     snprintf(num_s, 7, "%06d", static_cast<int>(order.size()) + 1);
 
-    newName = QString("pg-%1.png").arg(num_s);
+    QString newName = QString("pg-%1.png").arg(num_s);
 
     QFileDialog dialog(this);
     dialog.setWindowTitle("Open Image");
@@ -358,8 +356,8 @@ void MainWindow::insertLeft(){
         order.insert(order.begin()+current_pg, newName);
 
         filePaths = dialog.selectedFiles();
-        QString name = QFile(filePaths.at(0)).fileName();
-        QString newPath = QString("%1/%2").arg(dir.absolutePath()).arg(newName);
+//        QString name = QFile(filePaths.at(0)).fileName();
+        QString newPath = QString("%1/%2").arg(dir.absolutePath(), newName);
         QFile::copy(filePaths.at(0), newPath);
 
         showImage(newPath);
@@ -383,8 +381,8 @@ void MainWindow::insertRight(){
         order.insert(order.begin()+current_pg, newName);
 
         filePaths = dialog.selectedFiles();
-        QString name = QFile(filePaths.at(0)).fileName();
-        QString newPath = QString("%1/%2").arg(dir.absolutePath()).arg(newName);
+//        QString name = QFile(filePaths.at(0)).fileName();
+        QString newPath = QString("%1/%2").arg(dir.absolutePath(), newName);
         QFile::copy(filePaths.at(0), newPath);
 
         showImage(newPath);
@@ -452,7 +450,7 @@ void MainWindow::processFinished(bool success){
     }
     if (_convertor) {
         delete _convertor;
-        _convertor = NULL;
+        _convertor = nullptr;
     }
 }
 

@@ -31,7 +31,7 @@ public:
 private:
     void initUI();
     void createActions();
-    void showImage(QString);
+    void showImage(const QString&);
     void setupShortcuts();
 
 private slots:
